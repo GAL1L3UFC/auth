@@ -1,15 +1,19 @@
-# Use a base image that supports systemd, for example, Ubuntu
-FROM ubuntu:20.04
+# Use an official Ubuntu runtime as a parent image
+FROM ubuntu:latest
 
-# Install necessary packages
-RUN apt-get update && \
-apt-get install -y shellinabox && \
-apt-get install -y systemd && \
-apt-get clean && \
-rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-RUN echo 'root:root' | chpasswd
-# Expose the web-based terminal port
-EXPOSE 4200
+# Set the working directory to /app
+WORKDIR /app
 
-# Start shellinabox
-CMD ["/usr/bin/shellinaboxd", "-t", "-s", "/:LOGIN"]
+# Copy the current directory contents into the container at /app
+COPY . /app
+
+# Install required tools
+RUN apt-get update -y && \
+    apt-get install -y wget curl && \
+    curl -fsSL https://code-server.dev/install.sh | sh
+
+# Set environment variable for the port
+ENV PORT=10000
+
+# Start VSCode
+CMD code-server --port $PORT --disable-telemetry --auth none
